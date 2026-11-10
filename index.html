@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字排盘 · 性格解读</title>
+<style>
+  :root{
+    --bg:#12141a;
+    --bg2:#0d0f14;
+    --card:#1b1e26;
+    --card2:#232733;
+    --gold:#c9a86a;
+    --gold2:#dcc08b;
+    --water:#5b8fa8;
+    --water2:#7fb2c9;
+    --text:#e6e1d6;
+    --dim:#8a8578;
+    --line:rgba(201,168,106,.22);
+    /* 五行色 */
+    --wx-jin:#c9a86a; --wx-mu:#7aa86a; --wx-shui:#5b8fa8; --wx-huo:#c96a5b; --wx-tu:#a88a5b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(91,143,168,.14), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, rgba(201,168,106,.10), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    line-height:1.7;
+    min-height:100vh;
+    padding:24px 14px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  header{text-align:center;margin:8px 0 28px;}
+  .seal{
+    display:inline-block;border:1px solid var(--gold);color:var(--gold);
+    font-size:12px;padding:2px 10px;border-radius:2px;letter-spacing:3px;margin-bottom:14px;
+  }
+  h1{
+    font-family:"STKaiti","KaiTi","楷体","FangSong",serif;
+    font-weight:600;font-size:34px;color:var(--gold2);
+    letter-spacing:6px;margin-bottom:6px;
+  }
+  .subtitle{color:var(--water2);letter-spacing:4px;font-size:14px;}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:20px;margin-bottom:16px;position:relative;overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  }
+  .card h2{
+    font-family:"STKaiti","KaiTi","楷体",serif;
+    font-size:19px;color:var(--gold2);letter-spacing:2px;margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+
+  /* 表单 */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:var(--dim);margin-bottom:6px;letter-spacing:1px;}
+  .field input,.field select{
+    width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg2);color:var(--text);font-size:16px;outline:none;
+  }
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .row{display:flex;gap:12px;}
+  .row .field{flex:1;}
+  .btn{
+    width:100%;padding:13px;border-radius:8px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--gold),#a8864d);color:#1a150d;
+    font-size:17px;font-weight:600;letter-spacing:6px;margin-top:4px;
+    transition:transform .1s,opacity .2s;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn:hover{opacity:.92;}
+  .hint{font-size:12px;color:var(--dim);text-align:center;margin-top:12px;}
+
+  /* 排盘 */
+  .pillars{display:flex;gap:10px;margin:6px 0 4px;}
+  .pillar{
+    flex:1;background:var(--card2);border:1px solid var(--line);border-radius:10px;
+    text-align:center;padding:14px 4px 10px;position:relative;
+  }
+  .pillar .p-label{font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:8px;}
+  .pillar .gz{font-family:"STKaiti","KaiTi","楷体",serif;font-size:30px;line-height:1.15;}
+  .pillar .gz .gan{display:block;color:var(--text);}
+  .pillar .gz .zhi{display:block;color:var(--water2);font-size:28px;}
+  .pillar .cang{font-size:10px;color:var(--dim);margin-top:7px;letter-spacing:1px;}
+  .pillar.highlight .gz .gan{color:var(--gold2);}
+
+  /* 五行 */
+  .wx-bar{display:flex;align-items:center;gap:10px;margin:7px 0;}
+  .wx-bar .wx-name{width:16px;text-align:center;font-size:14px;flex-shrink:0;}
+  .wx-bar .track{flex:1;height:10px;background:var(--bg2);border-radius:5px;overflow:hidden;}
+  .wx-bar .fill{height:100%;border-radius:5px;transition:width .6s;}
+  .wx-bar .count{width:24px;text-align:right;font-size:13px;color:var(--dim);}
+  .wx-summary{font-size:13px;color:var(--dim);margin-top:12px;}
+
+  /* 性格 */
+  .master{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .master .big{
+    font-family:"STKaiti","KaiTi","楷体",serif;font-size:52px;color:var(--gold2);
+    line-height:1;min-width:64px;text-align:center;
+  }
+  .master .meta .tag{font-size:13px;color:var(--water2);letter-spacing:1px;}
+  .master .meta .name{font-size:21px;color:var(--text);margin:2px 0;}
+  .trait{display:inline-block;font-size:12px;color:var(--gold2);border:1px solid var(--line);
+    padding:2px 9px;border-radius:20px;margin:0 6px 6px 0;}
+  .sec-block{margin-top:14px;}
+  .sec-block .s-title{font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:6px;}
+  .sec-block p{font-size:14px;color:var(--text);}
+
+  /* 大运 */
+  .dayun{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .dy{flex:1 1 22%;min-width:60px;text-align:center;background:var(--bg2);
+    border:1px solid var(--line);border-radius:8px;padding:8px 4px;}
+  .dy .dy-age{font-size:11px;color:var(--dim);}
+  .dy .dy-gz{font-family:"STKaiti","KaiTi","楷体",serif;font-size:17px;color:var(--water2);margin:3px 0;}
+  .dy.cur{border-color:var(--gold);}
+  .dy.cur .dy-gz{color:var(--gold2);}
+
+  /* 付费锁 */
+  .lock{
+    margin-top:16px;background:linear-gradient(180deg,var(--card2),var(--bg2));
+    border:1px dashed var(--gold);border-radius:10px;padding:18px;text-align:center;
+  }
+  .lock .lk-icon{font-size:26px;margin-bottom:6px;}
+  .lock .lk-title{color:var(--gold2);font-size:15px;letter-spacing:2px;margin-bottom:6px;}
+  .lock .lk-list{font-size:13px;color:var(--dim);margin-bottom:12px;line-height:1.9;}
+  .lock .lk-btn{
+    display:inline-block;padding:9px 26px;border-radius:20px;border:1px solid var(--gold);
+    color:var(--gold2);font-size:14px;letter-spacing:3px;cursor:pointer;background:transparent;
+  }
+  .lock .lk-btn:hover{background:rgba(201,168,106,.1);}
+
+  .foot{text-align:center;color:var(--dim);font-size:12px;margin-top:24px;letter-spacing:1px;}
+  .foot .divider{width:60px;height:1px;background:var(--line);margin:0 auto 14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="seal">知微 · 见自己</div>
+    <h1>八字排盘 · 性格解读</h1>
+    <div class="subtitle">看见你的底色</div>
+  </header>
+
+  <!-- 输入 -->
+  <div class="card" id="inputCard">
+    <h2><span class="dot"></span>输入生辰</h2>
+    <div class="field">
+      <label>出生日期（公历）</label>
+      <input type="date" id="birthDate" value="1995-06-18">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>出生时辰</label>
+        <select id="shichen">
+          <option value="0">子时 23:00–00:59</option>
+          <option value="1">丑时 01:00–02:59</option>
+          <option value="2">寅时 03:00–04:59</option>
+          <option value="3">卯时 05:00–06:59</option>
+          <option value="4">辰时 07:00–08:59</option>
+          <option value="5">巳时 09:00–10:59</option>
+          <option value="6" selected>午时 11:00–12:59</option>
+          <option value="7">未时 13:00–14:59</option>
+          <option value="8">申时 15:00–16:59</option>
+          <option value="9">酉时 17:00–18:59</option>
+          <option value="10">戌时 19:00–20:59</option>
+          <option value="11">亥时 21:00–22:59</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>性别</label>
+        <select id="gender">
+          <option value="m">男</option>
+          <option value="f">女</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" onclick="paipan()">排 盘</button>
+    <div class="hint">时辰不详可选「午时（中午）」，结果略有偏差</div>
+  </div>
+
+  <!-- 结果 -->
+  <div id="result" style="display:none;"></div>
+
+  <div class="foot">
+    <div class="divider"></div>
+    仅供娱乐 · 不构成任何决策建议
+  </div>
+</div>
+
+<script>
+/* ============ 基础数据 ============ */
+var TG = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+var DZ = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+var GAN_WX = {甲:"木",乙:"木",丙:"火",丁:"火",戊:"土",己:"土",庚:"金",辛:"金",壬:"水",癸:"水"};
+var ZHI_WX = {子:"水",丑:"土",寅:"木",卯:"木",辰:"土",巳:"火",午:"火",未:"土",申:"金",酉:"金",戌:"土",亥:"水"};
+var ZHI_CANG = {子:["癸"],丑:["己","癸","辛"],寅:["甲","丙","戊"],卯:["乙"],辰:["戊","乙","癸"],巳:["丙","庚","戊"],午:["丁","己"],未:["己","丁","乙"],申:["庚","壬","戊"],酉:["辛"],戌:["戊","辛","丁"],亥:["壬","甲"]};
+var WX_COLOR = {金:"#c9a86a",木:"#7aa86a",水:"#5b8fa8",火:"#c96a5b",土:"#a88a5b"};
+
+/* ============ 历法算法 ============ */
+function toJDN(y,m,d){
+  if(m<=2){y-=1;m+=12;}
+  var A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524;
+}
+function jdnToDate(jdn){
+  var a=jdn+32044, b=Math.floor((4*a+3)/146097), c=a-Math.floor(146097*b/4);
+  var d=Math.floor((4*c+3)/1461), e=c-Math.floor(1461*d/4), m=Math.floor((5*e+2)/153);
+  return {y:100*b+d-4800+Math.floor(m/10), m:m+3-12*Math.floor(m/10), d:e-Math.floor((153*m+2)/5)+1};
+}
+function sunLon(jdn){
+  var n=jdn-2451545.0;
+  var L=(280.460+0.9856474*n)%360; if(L<0)L+=360;
+  var g=((357.528+0.9856003*n)%360)*Math.PI/180; if(g<0)g+=2*Math.PI;
+  var C=1.914666*Math.sin(g)+0.01995*Math.sin(2*g);
+  var lon=(L+C)%360; if(lon<0)lon+=360;
+  return lon;
+}
+// 找太阳黄经正向穿越 target 的那天（该公历年）
+function solarTerm(year,target){
+  var prevLon=sunLon(toJDN(year,1,1));
+  for(var d=1;d<=367;d++){
+    var jdn=toJDN(year,1,1)+d, lon=sunLon(jdn);
+    if(prevLon<target && lon>=target) return jdnToDate(jdn);
+    prevLon=lon;
+  }
+  return jdnToDate(toJDN(year,12,31));
+}
+// 12 个「节」（月柱分界），angle=太阳黄经，zhi=对应月支索引。
+// 必须按公历时间顺序排列（小寒1月 → 大雪12月），否则月柱判断会出错。
+var JIE = [
+  {angle:285,zhi:1,name:"小寒"},{angle:315,zhi:2,name:"立春"},{angle:345,zhi:3,name:"惊蛰"},
+  {angle:15,zhi:4,name:"清明"},{angle:45,zhi:5,name:"立夏"},{angle:75,zhi:6,name:"芒种"},
+  {angle:105,zhi:7,name:"小暑"},{angle:135,zhi:8,name:"立秋"},{angle:165,zhi:9,name:"白露"},
+  {angle:195,zhi:10,name:"寒露"},{angle:225,zhi:11,name:"立冬"},{angle:255,zhi:0,name:"大雪"}
+];
+
+/* ============ 四柱排盘 ============ */
+function dayGZ(y,m,d){
+  var idx=((toJDN(y,m,d)-2451551)%60+60)%60;
+  return {gan:idx%10, zhi:idx%12};
+}
+function paipan(){
+  var dateVal=document.getElementById("birthDate").value;
+  if(!dateVal){alert("请选择出生日期");return;}
+  var parts=dateVal.split("-");
+  var y=+parts[0], m=+parts[1], d=+parts[2];
+  var shiZhi=+document.getElementById("shichen").value;
+  var gender=document.getElementById("gender").value;
+  var isMale=(gender==="m");
+  var birthJdn=toJDN(y,m,d);
+
+  // --- 日柱 ---
+  var day=dayGZ(y,m,d);
+
+  // --- 年柱（立春为界）---
+  var lichun=solarTerm(y,315);
+  var liJdn=toJDN(lichun.y,lichun.m,lichun.d);
+  var lunarYear = (birthJdn < liJdn) ? y-1 : y;
+  var yearGan=((lunarYear-4)%10+10)%10, yearZhi=((lunarYear-4)%12+12)%12;
+
+  // --- 月柱（节为界）---
+  // 找出生日所在的月：在哪个节之后（JIE 已按时间顺序：小寒→大雪）
+  var monthZhi=1; // 默认丑月（1月小寒之前出生）
+  for(var i=0;i<JIE.length;i++){
+    var st=solarTerm(y,JIE[i].angle);
+    var stJdn=toJDN(st.y,st.m,st.d);
+    if(birthJdn >= stJdn){ monthZhi=JIE[i].zhi; }
+  }
+  // monthSeq：寅=0 ... 丑=11
+  var monthSeq=((monthZhi-2)%12+12)%12;
+  var yueGanStart=((yearGan%5)*2+2)%10;
+  var monthGan=(yueGanStart+monthSeq)%10;
+
+  // --- 时柱（五鼠遁）---
+  var shiGanStart=((day.gan%5)*2)%10;
+  var shiGan=(shiGanStart+shiZhi)%10;
+
+  // --- 五行统计（4干4支）---
+  var wxCount={金:0,木:0,水:0,火:0,土:0};
+  [yearGan,monthGan,day.gan,shiGan].forEach(function(g){wxCount[GAN_WX[TG[g]]]++;});
+  [yearZhi,monthZhi,day.zhi,shiZhi].forEach(function(z){wxCount[ZHI_WX[DZ[z]]]++;});
+
+  render({
+    y:y,m:m,d:d,shiZhi:shiZhi,isMale:isMale,birthJdn:birthJdn,lunarYear:lunarYear,
+    yearGan:yearGan,yearZhi:yearZhi,monthGan:monthGan,monthZhi:monthZhi,
+    day:day,shiGan:shiGan,shiZhi:shiZhi,wxCount:wxCount
+  });
+}
+
+/* ============ 性格内容库 ============ */
+var MASTER = {
+  甲:{xiang:"参天大树",traits:["正直","有担当","有主见","进取"],desc:"你天生是向上生长的人，目标感强，不喜欢被压着，认定的事会一路往前。",
+      relation:"你习惯向上、总想证明自己，关系里容易把「合作」谈成「较劲」，在「不肯服输」上吃亏。",
+      advice:"学会柔软。不必事事争第一，偶尔让一让，反而更得人心。"},
+  乙:{xiang:"花草藤蔓",traits:["灵活","细腻","善借力","温和"],desc:"你像藤蔓一样柔韧，适应力强，善于在环境里找到自己的位置。",
+      relation:"你太会迁就、太能忍，关系里容易在「讨好」上吃亏，把别人的需求放在自己前面。",
+      advice:"学会设边界。柔不是没底线，该拒绝时温柔而坚定。"},
+  丙:{xiang:"太阳",traits:["热情","大方","有感染力","磊落"],desc:"你像太阳，走到哪里都能照亮人，天生有感染力，藏不住热情。",
+      relation:"你付出感太强、容易一头热，关系里常在「热脸贴冷」上吃亏。",
+      advice:"学会收敛热度。看人下菜，把光和热留给值得的人。"},
+  丁:{xiang:"灯烛",traits:["温暖","细腻","专注","洞察"],desc:"你像一盏灯，温暖而不灼人，专注且有洞察力，外柔内刚。",
+      relation:"你太专注某个人、容易沉溺，关系里常在「单向付出」上吃亏。",
+      advice:"学会抽离。别把整盏灯都给一个人，留一点光给自己。"},
+  戊:{xiang:"高山",traits:["稳重","能扛事","守信用","有原则"],desc:"你像高山一样厚重可靠，能扛事，讲信用，让人安心。",
+      relation:"你什么都揽上身、习惯硬扛，关系里常在「大包大揽」上吃亏。",
+      advice:"学会拒绝。山不需要扛下所有，学会分出去，才能轻松。"},
+  己:{xiang:"田园",traits:["包容","细腻","务实","善照顾"],desc:"你像田园一样滋养人，包容、务实，擅长照顾别人。",
+      relation:"你太会照顾人、太能包容，关系里常在「没有底线」上吃亏。",
+      advice:"学会表达需求。田园也需要被灌溉，别总把自己排在最后。"},
+  庚:{xiang:"刀剑",traits:["果断","有原则","锋利","有魄力"],desc:"你像刀剑一样刚毅果断，原则性强，说话做事干脆利落。",
+      relation:"你太硬太直，容易把关系谈成较量，在「不肯低头」上吃亏。",
+      advice:"学会柔和。刀剑也要有鞘，锋芒该收时就收。"},
+  辛:{xiang:"珠玉",traits:["精致","有审美","重品质","自尊"],desc:"你像珠玉一样精致，审美出众，对品质和细节有天然的敏感。",
+      relation:"你太要面子、太敏感，关系里常在「不肯将就」上吃亏。",
+      advice:"学会放下完美。珠玉也需要耐心打磨，别被「高标准」困住。"},
+  壬:{xiang:"江河",traits:["智慧","格局大","善谋略","洒脱"],desc:"你像江河一样有格局，聪明、善变通，想得远、放得开。",
+      relation:"你太聪明、容易抽离，关系里常在「不够走心」上吃亏。",
+      advice:"学会停留。江河也要有深潭，别让一切从身边流过。"},
+  癸:{xiang:"雨露",traits:["细腻","直觉强","内敛","润物"],desc:"你像雨露一样细腻，直觉敏锐，不声张却能悄悄滋养身边人。",
+      relation:"你太会隐藏、太能忍，关系里常在「憋着不说」上吃亏。",
+      advice:"学会表达。雨露也要让人看见，把感受说出来。"}
+};
+
+/* ============ 大运排盘 ============ */
+function getJieList(year){
+  return JIE.map(function(j){
+    var dt=solarTerm(year,j.angle);
+    return {angle:j.angle,zhi:j.zhi,name:j.name,y:dt.y,m:dt.m,d:dt.d,jdn:toJDN(dt.y,dt.m,dt.d)};
+  });
+}
+function qiYun(birthJdn, yearGan, isMale){
+  var yearYang=(yearGan%2===0); // 甲丙戊庚壬 = 阳（索引0,2,4,6,8）
+  var shun=(yearYang&&isMale)||(!yearYang&&!isMale);
+  var list=getJieList(birthJdnYear(birthJdn));
+  var days=0, jie=null;
+  if(shun){
+    // 出生日之后最近的节
+    list.forEach(function(j){ if(j.jdn>=birthJdn && (jie==null||j.jdn<jie.jdn)) jie=j; });
+    if(!jie){ var nx=getJieList(birthJdnYear(birthJdn)+1); jie=nx[0]; }
+    days=jie.jdn-birthJdn;
+  }else{
+    // 出生日之前最近的节
+    list.forEach(function(j){ if(j.jdn<birthJdn && (jie==null||j.jdn>jie.jdn)) jie=j; });
+    if(!jie){ var py=getJieList(birthJdnYear(birthJdn)-1); jie=py[11]; }
+    days=birthJdn-jie.jdn;
+  }
+  var ageYears=Math.floor(days/3);
+  var ageMonths=Math.round((days%3)/3*12);
+  if(ageMonths===12){ageYears++;ageMonths=0;}
+  return {shun:shun, ageYears:ageYears, ageMonths:ageMonths};
+}
+function birthJdnYear(jdn){return jdnToDate(jdn).y;}
+
+function render(r){
+  var day=r.day;
+  var master=TG[day.gan];
+  var info=MASTER[master];
+
+  // 大运
+  var qy=qiYun(r.birthJdn, r.yearGan, r.isMale);
+  var monthGZIdx=((monthSeqOf(r.monthGan,r.monthZhi))%60+60)%60;
+  var dayunHTML="";
+  var nowYear=new Date().getFullYear();
+  for(var n=0;n<8;n++){
+    var stepIdx=(monthGZIdx + (qy.shun?n+1:-(n+1)) + 120)%60;
+    var stepGan=stepIdx%10, stepZhi=stepIdx%12;
+    var startAge=qy.ageYears+n*10, endAge=startAge+9;
+    var birthYear=r.lunarYear;
+    var startYear=birthYear+startAge, endYear=birthYear+endAge;
+    var cls="dy";
+    if(startYear<=nowYear && nowYear<=endYear) cls+=" cur";
+    dayunHTML+='<div class="'+cls+'"><div class="dy-age">'+startAge+'–'+endAge+'岁<br>'+startYear+'起</div>'+
+      '<div class="dy-gz">'+TG[stepGan]+DZ[stepZhi]+'</div></div>';
+  }
+
+  var pillars='<div class="pillars">'+
+    pillar("年柱",TG[r.yearGan],DZ[r.yearZhi],ZHI_CANG[DZ[r.yearZhi]].join(""),false)+
+    pillar("月柱",TG[r.monthGan],DZ[r.monthZhi],ZHI_CANG[DZ[r.monthZhi]].join(""),false)+
+    pillar("日柱",TG[day.gan],DZ[day.zhi],ZHI_CANG[DZ[day.zhi]].join(""),true)+
+    pillar("时柱",TG[r.shiGan],DZ[r.shiZhi],ZHI_CANG[DZ[r.shiZhi]].join(""),false)+
+    '</div>';
+
+  var wxOrder=["金","木","水","火","土"];
+  var wxHTML="";
+  var topWx=null,topCnt=-1;
+  wxOrder.forEach(function(w){
+    var c=r.wxCount[w];
+    if(c>topCnt){topCnt=c;topWx=w;}
+    wxHTML+='<div class="wx-bar"><span class="wx-name" style="color:'+WX_COLOR[w]+'">'+w+'</span>'+
+      '<div class="track"><div class="fill" style="width:'+(c/8*100)+'%;background:'+WX_COLOR[w]+'"></div></div>'+
+      '<span class="count">'+c+'</span></div>';
+  });
+
+  var result=''+
+  '<div class="card">'+
+    '<h2><span class="dot"></span>你的四柱</h2>'+
+    '<div class="hint" style="text-align:left;margin:0 0 10px;">命理年 '+TG[r.yearGan]+DZ[r.yearZhi]+'年 · '+(qy.shun?"顺排":"逆排")+' · '+qy.ageYears+'岁'+qy.ageMonths+'个月起运</div>'+
+    pillars+
+  '</div>'+
+
+  '<div class="card">'+
+    '<h2><span class="dot"></span>五行分布</h2>'+wxHTML+
+    '<div class="wx-summary">你的八字里「<span style="color:'+WX_COLOR[topWx]+'">'+topWx+'</span>」最旺，是你的底色所在。</div>'+
+  '</div>'+
+
+  '<div class="card">'+
+    '<h2><span class="dot"></span>你的性格底色</h2>'+
+    '<div class="master">'+
+      '<div class="big">'+master+'</div>'+
+      '<div class="meta">'+
+        '<div class="tag">日主 · '+info.xiang+'</div>'+
+        '<div class="name">'+master+'日出生</div>'+
+      '</div>'+
+    '</div>'+
+    info.traits.map(function(t){return '<span class="trait">'+t+'</span>';}).join("")+
+    '<div class="sec-block"><div class="s-title">你这个人</div><p>'+info.desc+'</p></div>'+
+    '<div class="sec-block"><div class="s-title">关系里的你</div><p>'+info.relation+'</p></div>'+
+    '<div class="sec-block"><div class="s-title">给你的话</div><p>'+info.advice+'</p></div>'+
+  '</div>'+
+
+  '<div class="card">'+
+    '<h2><span class="dot"></span>你的大运脉络</h2>'+
+    '<div class="hint" style="text-align:left;margin:0 0 8px;">每步大运管十年，标注金色为你当前所在</div>'+
+    '<div class="dayun">'+dayunHTML+'</div>'+
+    '<div class="lock">'+
+      '<div class="lk-icon">🔒</div>'+
+      '<div class="lk-title">解锁完整解读</div>'+
+      '<div class="lk-list">你的「用神」行事准则与方式<br>事业关键节点（到年份）<br>合婚匹配 · 谁补你、谁耗你</div>'+
+      '<span class="lk-btn">敬请期待</span>'+
+    '</div>'+
+  '</div>';
+
+  document.getElementById("result").innerHTML=result;
+  document.getElementById("result").style.display="block";
+  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+
+function pillar(label,gan,zhi,cang,hl){
+  return '<div class="pillar'+(hl?' highlight':'')+'">'+
+    '<div class="p-label">'+label+'</div>'+
+    '<div class="gz"><span class="gan">'+gan+'</span><span class="zhi">'+zhi+'</span></div>'+
+    '<div class="cang">'+cang+'</div>'+
+    '</div>';
+}
+function monthSeqOf(gan,zhi){
+  // 返回月柱的干支序号（0-59），甲子=0
+  var ganIdx=gan, zhiIdx=zhi;
+  for(var i=0;i<60;i++){ if(i%10===ganIdx && i%12===zhiIdx) return i; }
+  return 0;
+}
+
+// 页面加载即排一次（示例数据）
+paipan();
+</script>
+</body>
+</html>
